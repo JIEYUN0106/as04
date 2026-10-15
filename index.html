@@ -1,0 +1,856 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ㄟ，你有談過戀愛嗎？</title>
+
+<style>
+/* ===== 基本設定 ===== */
+:root {
+  --pink: #f3dce1;
+  --light-pink: #fff5f5;
+  --rose: #d6a0b0;
+  --wine: #6e3c4b;
+  --brown: #553b45;
+  --cream: #fffaf5;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+}
+
+body {
+  background: var(--light-pink);
+  color: var(--brown);
+  font-family: Georgia, "Noto Serif TC", "Songti TC", serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+/* ===== 固定章節進度 ===== */
+.progress {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,.25);
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #c77891;
+  transition: width .3s ease;
+}
+
+.top-label {
+  position: fixed;
+  z-index: 90;
+  top: 24px;
+  left: 28px;
+  color: white;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-shadow: 0 1px 10px #4c2633;
+  pointer-events: none;
+}
+
+.chapter-count {
+  position: fixed;
+  z-index: 90;
+  top: 23px;
+  right: 28px;
+  color: white;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 10px #4c2633;
+  pointer-events: none;
+}
+
+/* ===== 開場：全螢幕封面 ===== */
+.hero {
+  min-height: 100svh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: white;
+  scroll-snap-align: start;
+  background:
+    linear-gradient(90deg, rgba(54,28,39,.58), rgba(54,28,39,.08)),
+    linear-gradient(0deg, rgba(54,28,39,.35), transparent 65%),
+    url("06.png") center / cover no-repeat;
+}
+
+.hero::after,
+.full-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    0deg,
+    rgba(35,20,28,.55),
+    transparent 60%
+  );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  width: min(1000px, 88%);
+  margin: 0 auto;
+  padding: 100px 0;
+  animation: rise .9s ease both;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 5px;
+  margin-bottom: 28px;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  font-size: clamp(42px, 7.5vw, 100px);
+  line-height: 1.28;
+  font-weight: 400;
+  letter-spacing: 2px;
+  max-width: 850px;
+  text-shadow: 0 4px 30px rgba(0,0,0,.18);
+}
+
+.hero h1 span {
+  color: #f6cbd7;
+}
+
+.hero-subtitle {
+  margin-top: 20px;
+  font-size: clamp(12px, 1.5vw, 16px);
+  letter-spacing: 3px;
+  opacity: .9;
+}
+
+.hero-bottom {
+  margin-top: 64px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.start-button {
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 50px;
+  padding: 14px 27px;
+  color: white;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: .3s ease;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.start-button:hover {
+  background: white;
+  color: var(--wine);
+  transform: translateY(-3px);
+}
+
+.hero-note {
+  font-size: 12px;
+  letter-spacing: 1px;
+  opacity: .85;
+}
+
+.scroll-hint {
+  position: absolute;
+  z-index: 3;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 4px;
+  opacity: .8;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scroll-hint::after {
+  content: "";
+  display: block;
+  height: 34px;
+  width: 1px;
+  background: rgba(255,255,255,.7);
+}
+
+/* ===== 章節共同設定 ===== */
+.chapter {
+  position: relative;
+  scroll-snap-align: start;
+}
+
+.chapter-number {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--rose);
+  margin-bottom: 24px;
+}
+
+.chapter h2 {
+  font-weight: 400;
+  font-size: clamp(30px, 4.5vw, 58px);
+  line-height: 1.5;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.english-title {
+  font-family: Georgia, serif;
+  font-size: 11px;
+  line-height: 1.8;
+  letter-spacing: 2px;
+  color: #ad7d8b;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+
+.story-text {
+  font-family: "Noto Serif TC", "Songti TC", serif;
+  font-size: 15px;
+  line-height: 2.35;
+  letter-spacing: 1px;
+  white-space: pre-line;
+}
+
+.story-text p + p {
+  margin-top: 18px;
+}
+
+.chapter-end {
+  display: block;
+  margin-top: 32px;
+  color: var(--rose);
+  font-size: 11px;
+  letter-spacing: 3px;
+}
+
+/* ===== 01、03、05：全螢幕電影場景 ===== */
+.full-scene {
+  min-height: 100svh;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  color: white;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.scene-01 { background-image: url("01.png"); }
+.scene-03 { background-image: url("03.png"); }
+.scene-05 { background-image: url("05.png"); }
+
+.full-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(44,24,35,.14);
+  transition: background .5s ease;
+}
+
+.scene-content {
+  position: relative;
+  z-index: 2;
+  width: min(1100px, 86%);
+  margin: 0 auto;
+  padding: 100px 0 110px;
+}
+
+.full-scene .chapter-number {
+  color: #f5c4d2;
+}
+
+.full-scene .english-title {
+  color: #f3d4de;
+  margin-bottom: 24px;
+}
+
+.full-scene h2 {
+  max-width: 800px;
+  font-size: clamp(32px, 5vw, 65px);
+}
+
+.full-scene .story-text {
+  max-width: 660px;
+  font-size: 14px;
+  color: rgba(255,255,255,.95);
+  text-shadow: 0 1px 8px rgba(0,0,0,.3);
+}
+
+.full-scene .chapter-end {
+  color: #f4c7d5;
+}
+
+/* ===== 02、04：不對稱編輯式排版 ===== */
+.editorial {
+  min-height: 100svh;
+  padding: 110px 7%;
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: clamp(35px, 7vw, 100px);
+  align-items: center;
+  background:
+    radial-gradient(ellipse at 0% 100%, #f5dfe4 0%, transparent 40%),
+    var(--cream);
+  overflow: hidden;
+}
+
+.editorial:nth-of-type(even) {
+  background:
+    radial-gradient(ellipse at 100% 0%, #f5dfe4 0%, transparent 40%),
+    #fff7f6;
+}
+
+.editorial-image {
+  position: relative;
+  min-height: 65vh;
+  height: 690px;
+  max-height: 780px;
+  overflow: hidden;
+  background: var(--pink);
+}
+
+.editorial-image img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  transition: transform 1s ease;
+}
+
+.editorial-image:hover img {
+  transform: scale(1.035);
+}
+
+.image-caption {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 2;
+  color: white;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-shadow: 0 1px 8px #49313a;
+}
+
+.editorial-copy {
+  max-width: 490px;
+  padding: 30px 0;
+}
+
+.editorial-copy .story-text {
+  color: #68515a;
+}
+
+.editorial .chapter-end {
+  border-top: 1px solid #ead4da;
+  padding-top: 20px;
+  width: fit-content;
+}
+
+/* 第四章反轉圖片與文字位置 */
+.chapter-04 .editorial-image {
+  order: 2;
+}
+
+.chapter-04 .editorial-copy {
+  order: 1;
+  justify-self: end;
+}
+
+/* ===== 06：收尾 ===== */
+.ending {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 90px 24px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(255,255,255,.9), transparent 45%),
+    linear-gradient(145deg, #f7e2e7, #fff8f4 55%, #eecbd5);
+  scroll-snap-align: start;
+}
+
+.ending::before,
+.ending::after {
+  content: "♡";
+  position: absolute;
+  font-size: clamp(130px, 24vw, 340px);
+  color: rgba(199,120,145,.09);
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+.ending::before {
+  top: -40px;
+  left: -30px;
+  transform: rotate(-20deg);
+}
+
+.ending::after {
+  bottom: -80px;
+  right: -20px;
+  transform: rotate(15deg);
+}
+
+.ending-content {
+  position: relative;
+  z-index: 2;
+  max-width: 780px;
+}
+
+.ending .chapter-number {
+  color: var(--wine);
+}
+
+.ending h2 {
+  font-size: clamp(35px, 6vw, 76px);
+  line-height: 1.6;
+  font-weight: 400;
+  margin-bottom: 25px;
+}
+
+.ending h2 em {
+  color: #b96782;
+  font-style: normal;
+}
+
+.ending .story-text {
+  max-width: 600px;
+  margin: 0 auto;
+  color: #795d67;
+}
+
+.ending-line {
+  width: 60px;
+  height: 1px;
+  background: #c78b9c;
+  margin: 35px auto;
+}
+
+.restart-button {
+  margin-top: 38px;
+  background: var(--wine);
+  color: white;
+  border: 1px solid var(--wine);
+  padding: 14px 26px;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 2px;
+  transition: .3s;
+}
+
+.restart-button:hover {
+  background: transparent;
+  color: var(--wine);
+}
+
+footer {
+  text-align: center;
+  background: #fff8f4;
+  color: #a88b95;
+  padding: 22px;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+/* ===== 滑入動畫 ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== 手機版 ===== */
+@media (max-width: 760px) {
+  html {
+    scroll-snap-type: none;
+  }
+
+  .top-label {
+    left: 17px;
+    top: 18px;
+    font-size: 9px;
+    letter-spacing: 2px;
+  }
+
+  .chapter-count {
+    right: 17px;
+    top: 18px;
+    font-size: 10px;
+  }
+
+  .hero {
+    background-position: 58% center;
+  }
+
+  .hero-content {
+    width: 86%;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 11vw, 70px);
+  }
+
+  .hero-bottom {
+    margin-top: 42px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .full-scene {
+    min-height: 100svh;
+    background-position: center;
+  }
+
+  .scene-content {
+    width: 86%;
+    padding: 100px 0 75px;
+  }
+
+  .full-scene .story-text {
+    font-size: 13px;
+    line-height: 2.2;
+  }
+
+  .editorial {
+    grid-template-columns: 1fr;
+    padding: 90px 7% 75px;
+    gap: 35px;
+  }
+
+  .editorial-image {
+    min-height: 0;
+    height: 55vh;
+    max-height: 600px;
+  }
+
+  .editorial-copy {
+    padding: 0;
+  }
+
+  .chapter-04 .editorial-image,
+  .chapter-04 .editorial-copy {
+    order: initial;
+  }
+
+  .chapter-04 .editorial-copy {
+    justify-self: initial;
+  }
+
+  .chapter h2 {
+    font-size: 35px;
+  }
+
+  .story-text {
+    font-size: 14px;
+  }
+
+  .ending h2 {
+    font-size: 38px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="progress">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="top-label">A STORY ABOUT FIRST LOVE</div>
+<div class="chapter-count" id="chapterCount">00 / 06</div>
+
+<!-- ===== 開場封面 ===== -->
+<header class="hero" id="top">
+  <div class="hero-content">
+    <div class="eyebrow">A coming-of-age story · 2026</div>
+
+    <h1>ㄟ，你有<br><span>談過戀愛嗎？</span></h1>
+
+    <p class="hero-subtitle">
+      關於十九歲、曖昧，與第一個喜歡的人。
+    </p>
+
+    <div class="hero-bottom">
+      <button class="start-button"
+        onclick="document.getElementById('chapter01').scrollIntoView({behavior:'smooth'})">
+        開始閱讀　↓
+      </button>
+
+      <span class="hero-note">
+        一個還沒談過戀愛的女孩，與她的第一場心動。
+      </span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">SCROLL TO BEGIN</div>
+</header>
+
+<main>
+
+<!-- ===== CHAPTER 01：全螢幕 ===== -->
+<section class="chapter full-scene scene-01" id="chapter01">
+  <div class="scene-content reveal">
+    <div class="chapter-number">CHAPTER 01 / 06</div>
+    <h2>那些年，心動尚未發生</h2>
+    <div class="english-title">Before I Knew What Love Was</div>
+
+    <div class="story-text">
+<p>曾韻婕的青春，大多在書頁翻動的聲音裡度過。</p>
+<p>她是師長眼中的好學生，是同儕口中的學霸，聰明、幽默，似乎什麼都難不倒她。唯獨有一件事，她始終不明白——喜歡一個人，究竟是什麼感覺？</p>
+<p>在十九歲以前，她的人生裡有很多目標，卻從來沒有一個真正讓她心動的人。</p>
+    </div>
+
+    <span class="chapter-end">THE STORY BEGINS</span>
+  </div>
+</section>
+
+<!-- ===== CHAPTER 02：編輯式圖文 ===== -->
+<section class="chapter editorial" id="chapter02">
+  <div class="editorial-image reveal">
+    <img src="02.png" alt="第二章：十九歲那年，遇見你">
+    <span class="image-caption">A NEW BEGINNING</span>
+  </div>
+
+  <div class="editorial-copy reveal">
+    <div class="chapter-number">CHAPTER 02 / 06</div>
+    <h2>十九歲那年，<br>遇見你</h2>
+    <div class="english-title">The Boy Who Changed Nothing, Until He Did</div>
+
+    <div class="story-text">
+<p>大學生活開始後，她終於決定，或許自己也該試著談一場戀愛。</p>
+<p>然後，朋友把物理男介紹給了她。</p>
+<p>第一眼，外表合格，身高合格，嗯，不錯。</p>
+<p>她鼓起勇氣邀他吃飯，本以為只是一次普通的嘗試，卻沒想到，這個原本只是出現在餐桌對面的男孩，後來竟慢慢走進了她的日常。</p>
+    </div>
+
+    <span class="chapter-end">SOME THINGS START QUIETLY</span>
+  </div>
+</section>
+
+<!-- ===== CHAPTER 03：全螢幕 ===== -->
+<section class="chapter full-scene scene-03" id="chapter03">
+  <div class="scene-content reveal">
+    <div class="chapter-number">CHAPTER 03 / 06</div>
+    <h2>我們之間，<br>剛好是曖昧</h2>
+    <div class="english-title">Somewhere Between Friends and Something More</div>
+
+    <div class="story-text">
+<p>午餐一起吃，晚餐一起吃，修同一堂課，偶爾煲電話粥，甚至連野餐與營隊，都有彼此的身影。</p>
+<p>明明每次相處，她都努力把氣氛帶往兄弟的方向；明明嘴上說著只是玩玩，卻又一次次期待下一次見面。</p>
+<p>他們誰也沒有說破。</p>
+<p>於是，那些沒有名字的日常，就這樣成了她後來最捨不得的回憶。</p>
+    </div>
+
+    <span class="chapter-end">IF ONLY WE HAD SAID SOMETHING</span>
+  </div>
+</section>
+
+<!-- ===== CHAPTER 04：反轉編輯式排版 ===== -->
+<section class="chapter editorial chapter-04" id="chapter04">
+  <div class="editorial-image reveal">
+    <img src="04.png" alt="第四章：後來，故事裡多了一個她">
+    <span class="image-caption">THE DISTANCE</span>
+  </div>
+
+  <div class="editorial-copy reveal">
+    <div class="chapter-number">CHAPTER 04 / 06</div>
+    <h2>後來，故事裡<br>多了一個她</h2>
+    <div class="english-title">The Distance Between Us</div>
+
+    <div class="story-text">
+<p>A 女出現了。</p>
+<p>她比韻婕更直接，敢靠近，也敢表達自己的喜歡。而韻婕依然裝作不在乎，彷彿只要不承認，就不會輸掉什麼。</p>
+<p>只是，她沒想到，當她一次次把心意藏起來時，他也真的開始走遠。</p>
+<p>有些距離，不是某一天突然產生的，而是在無數次「沒關係」之中，慢慢形成的。</p>
+    </div>
+
+    <span class="chapter-end">SILENCE CAN CHANGE EVERYTHING</span>
+  </div>
+</section>
+
+<!-- ===== CHAPTER 05：全螢幕 ===== -->
+<section class="chapter full-scene scene-05" id="chapter05">
+  <div class="scene-content reveal">
+    <div class="chapter-number">CHAPTER 05 / 06</div>
+    <h2>原來，遺憾也有名字</h2>
+    <div class="english-title">The First Heartbreak</div>
+
+    <div class="story-text">
+<p>不再一起吃飯，不再長時間通話，也不再像從前那樣分享生活。</p>
+<p>直到聽見他和 A 女在一起的消息，韻婕才終於明白，自己並沒有想像中那麼不在乎。</p>
+<p>原來那些看似平凡的日常，早就被她悄悄放在心上。</p>
+<p>或許，物理男真的是她第一個喜歡的人。</p>
+<p>只是有些答案，總是在故事快要結束時，才終於浮現。</p>
+    </div>
+
+    <span class="chapter-end">SOME GOODBYES HAVE NO SOUND</span>
+  </div>
+</section>
+
+<!-- ===== CHAPTER 06：柔和的收尾 ===== -->
+<section class="chapter ending" id="chapter06">
+  <div class="ending-content reveal">
+    <div class="chapter-number">CHAPTER 06 / 06</div>
+    <div class="english-title">To My Next First Love</div>
+
+    <h2>故事未完，<br><em>少女繼續前行。</em></h2>
+
+    <div class="story-text">
+<p>失去一個可能性，並不代表青春就此結束。</p>
+<p>韻婕還是那個愛開玩笑的女孩，還是會認真讀書、和朋友打鬧，也還是會對未來抱有期待。只是這一次，她終於知道，原來自己也能為一個人心動，也會因為一段關係的結束而難過。</p>
+<p>沒有在一起，也不代表這段故事毫無意義。</p>
+<p>在大二的聖誕節到來以前，她決定把遺憾留在身後。</p>
+    </div>
+
+    <div class="ending-line"></div>
+
+    <h2 style="font-size:clamp(24px,4vw,42px);">
+      初戀還沒來，<br>故事也還沒寫完。
+    </h2>
+
+    <button class="restart-button"
+      onclick="document.getElementById('top').scrollIntoView({behavior:'smooth'})">
+      ↗　重新閱讀這個故事
+    </button>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  A STORY ABOUT GROWING UP, FALLING IN LOVE, AND LETTING GO.
+</footer>
+
+<script>
+/* ===== 滑動淡入動畫 ===== */
+const revealItems = document.querySelectorAll(".reveal");
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+    }
+  });
+}, {
+  threshold: 0.12
+});
+
+revealItems.forEach(item => revealObserver.observe(item));
+
+/* ===== 頁面進度條 ===== */
+const progressBar = document.getElementById("progressBar");
+const chapterCount = document.getElementById("chapterCount");
+
+function updateProgress() {
+  const scrollableHeight =
+    document.documentElement.scrollHeight - window.innerHeight;
+
+  const progress = scrollableHeight > 0
+    ? (window.scrollY / scrollableHeight) * 100
+    : 0;
+
+  progressBar.style.width = progress + "%";
+}
+
+window.addEventListener("scroll", updateProgress, { passive: true });
+window.addEventListener("resize", updateProgress);
+updateProgress();
+
+/* ===== 顯示目前章節 ===== */
+const chapterSections = [
+  document.getElementById("chapter01"),
+  document.getElementById("chapter02"),
+  document.getElementById("chapter03"),
+  document.getElementById("chapter04"),
+  document.getElementById("chapter05"),
+  document.getElementById("chapter06")
+];
+
+const chapterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const index = chapterSections.indexOf(entry.target) + 1;
+      chapterCount.textContent =
+        String(index).padStart(2, "0") + " / 06";
+    }
+  });
+}, {
+  threshold: 0.35
+});
+
+chapterSections.forEach(section => {
+  chapterObserver.observe(section);
+});
+</script>
+
+</body>
+</html>
+```
